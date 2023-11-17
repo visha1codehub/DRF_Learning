@@ -4,9 +4,10 @@ from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 from .models import Product
 from .serializers import ProductSerializer
-from api.mixins import StaffEditorPermissionMixin
+from api.mixins import StaffEditorPermissionMixin, UserQuerySetMixin
 
 class ProductListCreateAPIView(
+    UserQuerySetMixin,
     StaffEditorPermissionMixin,
     generics.ListCreateAPIView):
     queryset = Product.objects.all()
@@ -22,16 +23,17 @@ class ProductListCreateAPIView(
         serializer.save(user = self.request.user, content=content)
         # send a Django signal
         
-    def get_queryset(self):
-        qs = super().get_queryset()
-        request = self.request
-        user = request.user
-        if not user.is_authenticated:
-            return Product.objects.none()
-        return qs.filter(user=user)
+    # def get_queryset(self, *args, **kwargs):
+    #     qs = super().get_queryset(*args, **kwargs)
+    #     request = self.request
+    #     user = request.user
+    #     if not user.is_authenticated:
+    #         return Product.objects.none()
+    #     return qs.filter(user=user)
 
 
 class ProductDetailAPIView(
+    UserQuerySetMixin,
     StaffEditorPermissionMixin,
     generics.RetrieveAPIView):
     queryset = Product.objects.all()
@@ -40,6 +42,7 @@ class ProductDetailAPIView(
 # product_detail_view = ProductDetailAPIView.as_view()
 
 class ProductUpdateAPIView(
+    UserQuerySetMixin,
     StaffEditorPermissionMixin,
     generics.UpdateAPIView):
     queryset = Product.objects.all()
@@ -53,6 +56,7 @@ class ProductUpdateAPIView(
             serializer.save()
             
 class ProductDeleteAPIView(
+    UserQuerySetMixin,
     StaffEditorPermissionMixin,
     generics.DestroyAPIView):
     queryset = Product.objects.all()
